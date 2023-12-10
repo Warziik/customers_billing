@@ -16,15 +16,18 @@ impl Api {
 #[tokio::main]
 async fn main() {
     dotenv::dotenv().ok();
-    let pool = sqlx::PgPool::connect(env::var("DATABASE_URL").expect("The DATABASE_URL env variable must be provided.")).await.unwrap();
-    let api_service = OpenApiService::new(Api, "API", "0.1.0").server("http://localhost:8080");
+    let server_port = 8080;
+    let database_url = env::var("DATABASE_URL").expect("The DATABASE_URL env variable must be provided.");
+
+    let pool = sqlx::PgPool::connect(&database_url).await.unwrap();
+    let api_service = OpenApiService::new(Api, "API", env!("CARGO_PKG_VERSION")).server(format!("http://localhost:{}", server_port));
     let ui = api_service.swagger_ui();
     let app = Route::new()
         .nest("/", api_service)
         .nest("/docs", ui)
         .data(pool);
 
-    Server::new(TcpListener::bind("127.0.0.1:8080"))
+    Server::new(TcpListener::bind(format!("127.0.0.1:{}", server_port)))
         .run(app)
         .await.unwrap();
 }
