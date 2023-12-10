@@ -1,0 +1,13 @@
+{
+  "name": "cs_invoices",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "front": "pnpm --filter front",
+    "api": "cargo watch -x run -p api -w ./apps/api",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Alex Chesnay <contact@alex-chesnay.fr>",
+  "license": "MIT"
+}
