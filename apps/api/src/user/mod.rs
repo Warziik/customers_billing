@@ -4,7 +4,7 @@ use argon2::password_hash::SaltString;
 use chrono::{DateTime, Utc};
 use poem::{Result};
 use poem::web::Data;
-use poem_openapi::{Object, OpenApi, ApiResponse};
+use poem_openapi::{Object, OpenApi, ApiResponse, Tags};
 use poem_openapi::payload::{Json, PlainText};
 use poem_openapi::param::Path;
 use serde::{Deserialize, Serialize};
@@ -12,6 +12,11 @@ use sqlx::{FromRow, Pool, Postgres};
 use crate::auth::AuthProvider;
 
 pub struct UserApi;
+
+#[derive(Tags)]
+enum ApiTags {
+    User
+}
 
 #[derive(Object, FromRow, Debug, Deserialize, Serialize)]
 pub struct User {
@@ -47,7 +52,7 @@ enum GetUserResponse {
     NotFound(PlainText<String>)
 }
 
-#[OpenApi]
+#[OpenApi(tag = "ApiTags::User")]
 impl UserApi {
     #[oai(path = "/users", method = "post")]
     async fn create_user(&self, pool: Data<&Pool<Postgres>>, data: Json<User>) -> Result<GetUserResponse> {

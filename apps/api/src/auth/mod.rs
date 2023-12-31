@@ -4,7 +4,7 @@ use jwt::{SignWithKey, VerifyWithKey};
 use poem::error::InternalServerError;
 use poem::web::{Data};
 use poem::{Request, Result};
-use poem_openapi::{ApiResponse, Object, OpenApi, SecurityScheme};
+use poem_openapi::{ApiResponse, Object, OpenApi, SecurityScheme, Tags};
 use poem_openapi::payload::Json;
 use poem_openapi::__private::serde;
 use poem_openapi::auth::{Bearer};
@@ -18,6 +18,11 @@ pub const SERVER_KEY: &[u8] = b"123456";
 pub type ServerKey = Hmac<Sha256>;
 
 pub struct AuthApi;
+
+#[derive(Tags)]
+enum ApiTags {
+    Auth
+}
 
 #[derive(SecurityScheme)]
 #[oai(
@@ -51,7 +56,7 @@ enum AuthenticationResponse {
     NotFound(PlainText<String>)
 }
 
-#[OpenApi]
+#[OpenApi(tag = "ApiTags::Auth")]
 impl AuthApi {
     #[oai(path = "/auth", method = "post")]
     async fn authenticate(&self, pool: Data<&Pool<Postgres>>, server_key: Data<&ServerKey>, req: Json<AuthenticationRequest>) -> Result<AuthenticationResponse> {
