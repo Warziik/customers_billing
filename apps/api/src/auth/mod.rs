@@ -14,7 +14,6 @@ use sqlx::{Pool, Postgres};
 use crate::user::User;
 use serde::Deserialize;
 
-pub const SERVER_KEY: &[u8] = b"123456";
 pub type ServerKey = Hmac<Sha256>;
 
 pub struct AuthApi;
@@ -76,7 +75,7 @@ impl AuthApi {
                     Err(_) => Ok(AuthenticationResponse::WrongCredentials(PlainText("Unable to verify the given password".to_string())))
                 }
             }
-            Err(_) => Ok(AuthenticationResponse::NotFound(PlainText(format!("No user matching the given credentials has been found"))))
+            Err(_) => Ok(AuthenticationResponse::NotFound(PlainText("No user matching the given credentials has been found".to_string())))
         }
     }
 }

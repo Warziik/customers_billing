@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "front": "pnpm --filter front",
-    "api": "cargo watch -x run -p api -w ./apps/api",
+    "api": "RUST_BACKTRACE=1 cargo watch -x run -p api -w ./apps/api",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

@@ -49,7 +49,10 @@ enum GetUserResponse {
     User(Json<User>),
 
     #[oai(status = 404)]
-    NotFound(PlainText<String>)
+    NotFound(PlainText<String>),
+
+    #[oai(status = 403)]
+    Forbidden(PlainText<String>)
 }
 
 #[OpenApi(tag = "ApiTags::User")]
@@ -75,7 +78,11 @@ impl UserApi {
     }
 
     #[oai(path = "/users/:id", method = "get")]
-    async fn get_user(&self, pool: Data<&Pool<Postgres>>, auth: AuthProvider, id: Path<i32>) -> Result<GetUserResponse> {
+    async fn get_user(&self, pool: Data<&Pool<Postgres>>, auth: AuthProvider, id: Path<i32>) -> GetUserResponse {
+        if auth.0.id != id.0 {
+            return GetUserResponse::Forbidden(PlainText("You cannot retrieve another user's data".to_string()));
+        }
+
         let user = sqlx::query_as!(
             User,
             "SELECT * FROM users WHERE id = $1",
@@ -83,13 +90,13 @@ impl UserApi {
         ).fetch_one(*pool).await;
 
         match user {
-            Ok(user) => Ok(GetUserResponse::User(Json(user))),
-            Err(_) => Ok(GetUserResponse::NotFound(PlainText(format!("User with id {} not found", id.0))))
+            Ok(user) => GetUserResponse::User(Json(user)),
+            Err(_) => GetUserResponse::NotFound(PlainText(format!("User with id {} not found", id.0)))
         }
     }
 
     #[oai(path = "/me", method = "get")]
-    async fn get_logged_user(&self, pool: Data<&Pool<Postgres>>, auth: AuthProvider) -> Result<GetUserResponse> {
+    async fn get_logged_user(&self, auth: AuthProvider) -> Result<GetUserResponse> {
         Ok(GetUserResponse::User(Json(auth.0)))
     }
 }
